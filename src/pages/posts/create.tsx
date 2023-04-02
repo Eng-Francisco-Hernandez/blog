@@ -5,6 +5,7 @@ import { Container, Row, Card, Button, Form } from "react-bootstrap";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { useRouter } from "next/router";
+import sanitizeHtml from 'sanitize-html';
 
 export default function CreatePost() {
   const router = useRouter();
@@ -22,7 +23,7 @@ export default function CreatePost() {
         body: JSON.stringify({
           title: postTitle,
           description: postDescription,
-          body: postBody,
+          body: sanitizeHtml(postBody),
         }),
       });
       router.push("/landing");

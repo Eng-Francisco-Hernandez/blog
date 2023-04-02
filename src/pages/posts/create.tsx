@@ -2,10 +2,13 @@ import NavbarLayout from "@/components/layout/NavbarLayout";
 import React, { useEffect, useState } from "react";
 import { Container, Row, Card, Button, Form, Alert } from "react-bootstrap";
 // @ts-ignore
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { useRouter } from "next/router";
 import sanitizeHtml from "sanitize-html";
+import dynamic from "next/dynamic";
+
+const Editor = dynamic(() => import("@/components/editor/Editor"), {
+  ssr: false,
+});
 
 export default function CreatePost() {
   const router = useRouter();
@@ -121,13 +124,9 @@ export default function CreatePost() {
                   />
                 </Form.Group>
                 <h6 className="mt-10">Body</h6>
-                <CKEditor
-                  editor={ClassicEditor}
-                  data={postBody}
-                  onChange={(event: any, editor: any) => {
-                    const data = editor.getData();
-                    setPostBody(data);
-                  }}
+                <Editor
+                  value={postBody}
+                  onChange={(data: any) => setPostBody(data)}
                 />
                 <Button
                   variant="dark"

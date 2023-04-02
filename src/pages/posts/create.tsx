@@ -1,32 +1,41 @@
 import NavbarLayout from "@/components/layout/NavbarLayout";
 import React, { useState } from "react";
-import { Container, Row, Card, Button, Form } from "react-bootstrap";
+import { Container, Row, Card, Button, Form, Alert } from "react-bootstrap";
 // @ts-ignore
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { useRouter } from "next/router";
-import sanitizeHtml from 'sanitize-html';
+import sanitizeHtml from "sanitize-html";
 
 export default function CreatePost() {
   const router = useRouter();
   const [postTitle, setPostTitle] = useState("");
   const [postDescription, setPostDescription] = useState("");
   const [postBody, setPostBody] = useState("");
+  const [showCreateError, setShowCreateError] = useState(false);
 
   const savePost = async () => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/posts`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: postTitle,
-          description: postDescription,
-          body: sanitizeHtml(postBody),
-        }),
-      });
-      router.push("/landing");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: postTitle,
+            description: postDescription,
+            body: sanitizeHtml(postBody),
+          }),
+        }
+      );
+      if (response.status === 400) {
+        setShowCreateError(true);
+      } else {
+        setShowCreateError(false);
+        router.push("/landing");
+      }
     } catch (error) {
       console.error(error);
     }
@@ -38,6 +47,11 @@ export default function CreatePost() {
         <Row>
           <Card>
             <Card.Body>
+              {showCreateError && (
+                <Alert variant="danger">
+                  This title already exists. Please choose another one.
+                </Alert>
+              )}
               <Form>
                 <Form.Group className="mb-3">
                   <Form.Label>Title</Form.Label>
@@ -66,7 +80,16 @@ export default function CreatePost() {
                     setPostBody(data);
                   }}
                 />
-                <Button onClick={savePost} className="mt-10" variant="primary">
+                <Button
+                  disabled={
+                    postTitle.trim() === "" ||
+                    postDescription.trim() === "" ||
+                    postBody.trim() === ""
+                  }
+                  onClick={savePost}
+                  className="mt-10"
+                  variant="primary"
+                >
                   Save
                 </Button>
               </Form>

@@ -1,5 +1,5 @@
 import NavbarLayout from "@/components/layout/NavbarLayout";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Container, Row, Card, Button, Form, Alert } from "react-bootstrap";
 // @ts-ignore
 import { CKEditor } from "@ckeditor/ckeditor5-react";
@@ -12,9 +12,23 @@ export default function CreatePost() {
   const [postTitle, setPostTitle] = useState("");
   const [postDescription, setPostDescription] = useState("");
   const [postBody, setPostBody] = useState("");
-  const [showCreateError, setShowCreateError] = useState(false);
+  const [showError, setShowError] = useState(false);
 
-  const savePost = async () => {
+  const getPost = async () => {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${router.query.id}`
+    );
+    const parsedPost = await res.json();
+    setPostTitle(parsedPost.title);
+    setPostDescription(parsedPost.description);
+    setPostBody(parsedPost.body);
+  };
+
+  useEffect(() => {
+    if (router.query.id) getPost();
+  }, []);
+
+  const createPost = async () => {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts`,
@@ -31,13 +45,48 @@ export default function CreatePost() {
         }
       );
       if (response.status === 400) {
-        setShowCreateError(true);
+        setShowError(true);
       } else {
-        setShowCreateError(false);
+        setShowError(false);
         router.push("/landing");
       }
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const updatePost = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${router.query.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: postTitle,
+            description: postDescription,
+            body: sanitizeHtml(postBody),
+          }),
+        }
+      );
+      if (response.status === 400) {
+        setShowError(true);
+      } else {
+        setShowError(false);
+        router.push("/landing");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const savePost = async () => {
+    if (!router.query.id) {
+      await createPost();
+    } else {
+      await updatePost();
     }
   };
 
@@ -47,7 +96,7 @@ export default function CreatePost() {
         <Row>
           <Card>
             <Card.Body>
-              {showCreateError && (
+              {showError && (
                 <Alert variant="danger">
                   This title already exists. Please choose another one.
                 </Alert>

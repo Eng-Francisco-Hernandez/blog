@@ -1,7 +1,3 @@
-import React from 'react'
+import createPostPage from "../create";
 
-export default function edit() {
-  return (
-    <div>edit</div>
-  )
-}
+export default createPostPage;

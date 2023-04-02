@@ -130,6 +130,7 @@ export default function CreatePost() {
                   }}
                 />
                 <Button
+                  variant="dark"
                   disabled={
                     postTitle.trim() === "" ||
                     postDescription.trim() === "" ||
@@ -137,7 +138,6 @@ export default function CreatePost() {
                   }
                   onClick={savePost}
                   className="mt-10"
-                  variant="primary"
                 >
                   Save
                 </Button>

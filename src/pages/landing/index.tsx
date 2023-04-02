@@ -1,6 +1,6 @@
 import NavbarLayout from "@/components/layout/NavbarLayout";
 import React, { useEffect, useState } from "react";
-import { Container, Row, Button, Card, Alert } from "react-bootstrap";
+import { Container, Row, Button, Card, Alert, Col } from "react-bootstrap";
 import { Trash } from "react-bootstrap-icons";
 import { useRouter } from "next/router";
 
@@ -45,60 +45,71 @@ export default function Landing() {
       <Container>
         <Row>
           {showErrorAlert && (
-            <Alert variant="danger">
-              There was an error deleting the post. Please try again.
-            </Alert>
+            <Col>
+              <Alert variant="danger">
+                There was an error deleting the post. Please try again.
+              </Alert>
+            </Col>
           )}
           {!posts.length && (
-            <Alert>
-              There are no posts published yet. Go ahead and{" "}
-              <a
-                style={{
-                  cursor: "pointer",
-                  textDecoration: "underline",
-                }}
-                onClick={() => router.push("/posts/create")}
-              >
-                create one!
-              </a>
-            </Alert>
+            <Col>
+              <Alert variant="dark">
+                There are no posts published yet. Go ahead and{" "}
+                <a
+                  style={{
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                  }}
+                  onClick={() => router.push("/posts/create")}
+                >
+                  create one!
+                </a>
+              </Alert>
+            </Col>
           )}
+        </Row>
+        <Row>
           {posts.map((post: any, index) => {
             return (
-              <Card className="mb-10" key={index}>
-                <Card.Body>
-                  <Card.Title>{post.title}</Card.Title>
-                  <Card.Text>{post.description}</Card.Text>
-                  <div className="post-card-footer">
-                    <div>
-                      <Button
-                        onClick={() => router.push(`/posts/${post._id}`)}
-                        size="sm"
-                        className="mr-10"
-                        variant="primary"
-                      >
-                        View
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="warning"
-                        onClick={() => router.push(`/posts/${post._id}/edit`)}
-                      >
-                        Edit
-                      </Button>
+              <Col xs={6}>
+                <Card className="mb-10" key={index}>
+                  <Card.Body>
+                    <Card.Title>{post.title}</Card.Title>
+                    <Card.Text>{post.description}</Card.Text>
+                    <div className="post-card-footer">
+                      <div>
+                        <Button
+                          onClick={() => router.push(`/posts/${post._id}`)}
+                          size="sm"
+                          className="mr-10"
+                          variant="dark"
+                        >
+                          View
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline-dark"
+                          onClick={() => router.push(`/posts/${post._id}/edit`)}
+                        >
+                          Edit
+                        </Button>
+                      </div>
+                      <div>
+                        <Button
+                          onClick={() => deletePost(post._id)}
+                          size="sm"
+                          variant="outline-danger"
+                          style={{
+                            borderRadius: "50%",
+                          }}
+                        >
+                          <Trash />
+                        </Button>
+                      </div>
                     </div>
-                    <div>
-                      <Button
-                        onClick={() => deletePost(post._id)}
-                        size="sm"
-                        variant="danger"
-                      >
-                        <Trash />
-                      </Button>
-                    </div>
-                  </div>
-                </Card.Body>
-              </Card>
+                  </Card.Body>
+                </Card>
+              </Col>
             );
           })}
         </Row>

@@ -21,6 +21,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       } catch (error: any) {
         return res.status(400).json({ msg: error.message });
       }
+      break;
     default:
       return res.status(400).json({ msg: "This method is not supported" });
   }

@@ -5,6 +5,7 @@ import { Container, Row, Card, Button, Form, Alert } from "react-bootstrap";
 import { useRouter } from "next/router";
 import sanitizeHtml from "sanitize-html";
 import dynamic from "next/dynamic";
+import SpinnerLayout from "@/components/spinner-layout/SpinnerLayout";
 
 const Editor = dynamic(() => import("@/components/editor/Editor"), {
   ssr: false,
@@ -12,24 +13,31 @@ const Editor = dynamic(() => import("@/components/editor/Editor"), {
 
 export default function CreatePost() {
   const router = useRouter();
+  const {id} = router.query
   const [postTitle, setPostTitle] = useState("");
   const [postDescription, setPostDescription] = useState("");
   const [postBody, setPostBody] = useState("");
   const [showError, setShowError] = useState(false);
+  const [isPostLoading, setIsPostLoading] = useState(false);
 
   const getPost = async () => {
+    setIsPostLoading(true);
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${router.query.id}`
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${id}`
     );
     const parsedPost = await res.json();
     setPostTitle(parsedPost.title);
     setPostDescription(parsedPost.description);
     setPostBody(parsedPost.body);
+    setIsPostLoading(false);
   };
 
   useEffect(() => {
-    if (router.query.id) getPost();
-  }, []);
+    if(!id) {
+      return;
+    }
+    if (id) getPost();
+  }, [id]);
 
   const createPost = async () => {
     try {
@@ -61,7 +69,7 @@ export default function CreatePost() {
   const updatePost = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${router.query.id}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${id}`,
         {
           method: "PUT",
           headers: {
@@ -86,7 +94,7 @@ export default function CreatePost() {
   };
 
   const savePost = async () => {
-    if (!router.query.id) {
+    if (!id) {
       await createPost();
     } else {
       await updatePost();
@@ -95,56 +103,60 @@ export default function CreatePost() {
 
   return (
     <NavbarLayout>
-      <Container>
-        <Row>
-          <Card>
-            <Card.Body>
-              {showError && (
-                <Alert variant="danger">
-                  This title already exists. Please choose another one.
-                </Alert>
-              )}
-              <Form>
-                <Form.Group className="mb-3">
-                  <Form.Label>Title</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Post title"
-                    value={postTitle}
-                    onChange={(e) => setPostTitle(e.target.value)}
+      {isPostLoading ? (
+        <SpinnerLayout />
+      ) : (
+        <Container>
+          <Row>
+            <Card>
+              <Card.Body>
+                {showError && (
+                  <Alert variant="danger">
+                    This title already exists. Please choose another one.
+                  </Alert>
+                )}
+                <Form>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Title</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Post title"
+                      value={postTitle}
+                      onChange={(e) => setPostTitle(e.target.value)}
+                    />
+                  </Form.Group>
+                  <Form.Group className="mb-3">
+                    <Form.Label>Description</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Post title"
+                      value={postDescription}
+                      onChange={(e) => setPostDescription(e.target.value)}
+                    />
+                  </Form.Group>
+                  <h6 className="mt-10">Body</h6>
+                  <Editor
+                    value={postBody}
+                    onChange={(data: any) => setPostBody(data)}
                   />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Description</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Post title"
-                    value={postDescription}
-                    onChange={(e) => setPostDescription(e.target.value)}
-                  />
-                </Form.Group>
-                <h6 className="mt-10">Body</h6>
-                <Editor
-                  value={postBody}
-                  onChange={(data: any) => setPostBody(data)}
-                />
-                <Button
-                  variant="dark"
-                  disabled={
-                    postTitle.trim() === "" ||
-                    postDescription.trim() === "" ||
-                    postBody.trim() === ""
-                  }
-                  onClick={savePost}
-                  className="mt-10"
-                >
-                  Save
-                </Button>
-              </Form>
-            </Card.Body>
-          </Card>
-        </Row>
-      </Container>
+                  <Button
+                    variant="dark"
+                    disabled={
+                      postTitle.trim() === "" ||
+                      postDescription.trim() === "" ||
+                      postBody.trim() === ""
+                    }
+                    onClick={savePost}
+                    className="mt-10"
+                  >
+                    Save
+                  </Button>
+                </Form>
+              </Card.Body>
+            </Card>
+          </Row>
+        </Container>
+      )}
     </NavbarLayout>
   );
 }
